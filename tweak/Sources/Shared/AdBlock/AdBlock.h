@@ -4,7 +4,7 @@
 // Hide upsells drops the Premium prompts (AdPopups.x, AdServices.x), the ClientMessagingPlatform's
 // marketing surfaces (AdMessages.x) and forces the flags that show
 // them off (AdBlock.m, through Flags.x). Spoof Premium rewrites the product state and remote
-// config as they arrive (Premium.m), crossfade and automix included (Crossfade.x), enables shuffle
+// config as they arrive (Premium.m, the account page's plan row, badge and overview included), crossfade and automix included (Crossfade.x), enables shuffle
 // and repeat in radio/autoplay (RadioModes.m), and keeps the
 // session alive when the server disagrees: its logout endpoints answered as if they succeeded
 // (AdNetwork.x), the session's own logout, destroy and credential-wipe calls held (SessionProtect.x).
@@ -40,6 +40,12 @@ void SGResetAdBlock(void);
 // Premium account's. nil when the bytes do not parse.
 NSData *SGPatchCustomize(NSData *body);
 NSData *SGPatchBootstrap(NSData *body);
+
+// Premium.m: the account page's plan row rewritten Premium (nil when the bytes do not parse), and
+// the badge and plan overview synthesized Premium, so the page matches the spoofed state.
+NSData *SGPatchPlanRow(NSData *body);
+NSData *SGPlanBadge(void);
+NSData *SGPlanOverview(void);
 
 // Feeds.m: a browsita, casita or scrollsita feed with its ad sections taken out; nil when there
 // were none, or the bytes were not the shape expected.

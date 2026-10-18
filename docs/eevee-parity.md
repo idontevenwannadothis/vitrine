@@ -58,8 +58,8 @@ switch is on and guards itself on the class or selector being there, the way `Ad
 | `Premium/LikedSongsEnabler.x.swift` | The `artist-entity-view-liked-tracks-row` into the artist hub JSON (`LikedSongs.x`; hooks the same builder method as `AdBlock/AdHubs.x`, both call through). | `Shared/PremiumUI/LikedSongs.x` |
 | `Premium/TrueShuffle.x.swift` | `SmartShuffleHandlerImplementation` found by suffix, its `checkRecommendationsEnabled` and `recommendationIsBeingAddedWithTrackID:` forced NO. | `Shared/PremiumUI/TrueShuffle.x` |
 | `Premium/SiriNoPlayAsRadio.x.swift` | `INMediaItem.identifier`'s play-command JSON: drop the `play-as-radio` restriction and the `:station` suffix. | `Shared/PremiumUI/SiriRadio.x` |
-| `Premium/DarkPopUps.x.swift` | Make no-Premium pop-ups dark. **Todo.** Eevee does not activate it on 9.1.x, so it needs a device check first. | `Shared/PremiumUI/DarkPopups.x` |
-| `Premium/PremiumPlanRow.swift` | A "Premium" row that reflects the spoofed state. **Todo.** | `Shared/AdBlock/AdBlockSettings.m` |
+| `Premium/DarkPopUps.x.swift` | Make no-Premium pop-ups dark. **Not portable:** `SPTEncorePopUpContainer` is absent from the 9.1.90 binary (checked 2026-10-18), and Eevee ships this disabled on 9.1.x too. The Encore pop-ups that remain are dark already. | — |
+| `Premium/DynamicPremium+PremiumPlanRow.swift` | A "Premium" row that reflects the spoofed state. **Built** in `Premium.m` (`SGPatchPlanRow`, `SGPlanBadge`, `SGPlanOverview`), routed in `AdNetwork.x`: `v1/GetPremiumPlanRow` rewritten, `GetYourPremiumBadge` and `GetPlanOverview` synthesized. Named Spotify Premium in Spotify's green, not after the mod; Eevee's payment notice left out (its strings are gone from 9.1). Field numbers from Eevee's `.pb.swift` models. | `Shared/AdBlock/Premium.m` |
 
 `Intents` was added to `tweak/Makefile`'s frameworks for the Siri hook. `scripts/check-layers.sh`
 stays green (all new code is `Shared/`).
@@ -146,8 +146,8 @@ and note in each ported file what it came from and that it was reimplemented.
 
 ## Order of work
 
-1. Tier 1 (unlocks) — small, testable, visible. **Done** (`Shared/PremiumUI/`; DarkPopUps and the
-   Premium plan row remain).
+1. Tier 1 (unlocks) — small, testable, visible. **Done** (`Shared/PremiumUI/`; DarkPopUps is not
+   portable to 9.1, the plan page is patched in `Premium.m`).
 2. Tier 2 SessionProtection — stops the logout bug. **Done** (`Shared/AdBlock/SessionProtect.x`).
 3. Tier 3 audit — close blocker gaps. **Done** (CMP surfaces, the scroll-feed pipeline, deep-link
    share cleaning).

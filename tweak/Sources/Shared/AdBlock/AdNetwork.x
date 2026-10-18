@@ -5,8 +5,10 @@
 // empty. With Spoof Premium on, the bootstrap and customize bodies are rewritten by Premium.m
 // before the client sees them, the endpoints the server would use to log the account out are
 // answered as if they succeeded, and past the first thirty seconds the re-fetches that could bring
-// the real state back are canceled before they leave. Feeds go through Feeds.m. Everything here is
-// EeveeSpotify's, less its Ably hooks, which it does not turn on for 9.1 either.
+// the real state back are canceled before they leave. The account page's plan row, badge and
+// overview are answered as a Premium account's, so what the page shows matches the spoof. Feeds go
+// through Feeds.m. Everything here is EeveeSpotify's, less its Ably hooks, which it does not turn
+// on for 9.1 either.
 #import "Core/SGCore.h"
 #import "AdBlock.h"
 
@@ -28,6 +30,12 @@ static BOOL has(NSString *text, NSString *needle) {
 
 static BOOL isBootstrap(NSString *path) { return has(path, @"v1/bootstrap"); }
 static BOOL isCustomize(NSString *path) { return has(path, @"v1/customize"); }
+
+// The account page's plan data, answered as a Premium account's so the page matches the spoof.
+static BOOL isPlanRow(NSString *path) { return has(path, @"v1/getpremiumplanrow"); }
+static BOOL isPlanBadge(NSString *path) { return has(path, @"getyourpremiumbadge"); }
+static BOOL isPlanOverview(NSString *path) { return has(path, @"getplanoverview"); }
+static BOOL isPlan(NSString *path) { return isPlanRow(path) || isPlanBadge(path) || isPlanOverview(path); }
 
 // The feeds Home, Search and the page under the player are built from. casita/v1/feeds is the flat
 // list of tab chips, not sections.
@@ -91,7 +99,7 @@ static SGNet classify(NSURL *url) {
     if (premium && isLogout(path)) return SGNetBlock;
     if (ads && isAd(url, path)) return SGNetBlock;
     if (premium && elapsed() > 30 && isRefetch(path)) return SGNetBlock;
-    if (premium && (isBootstrap(path) || isCustomize(path))) return SGNetPatch;
+    if (premium && (isBootstrap(path) || isCustomize(path) || isPlan(path))) return SGNetPatch;
     if (ads && isFeed(path)) return SGNetPatch;
     return SGNetPass;
 }
@@ -119,7 +127,11 @@ static NSData *patched(NSURL *url, NSData *body) {
     NSString *path = url.path.lowercaseString ?: @"";
     if (isFeed(path)) return SGStripFeed(body);
     SGAdBlockSawOne(@"Config rewrites");
-    NSData *result = isBootstrap(path) ? SGPatchBootstrap(body) : SGPatchCustomize(body);
+    NSData *result;
+    if (isPlanRow(path)) result = SGPatchPlanRow(body);
+    else if (isPlanBadge(path)) result = SGPlanBadge();
+    else if (isPlanOverview(path)) result = SGPlanOverview();
+    else result = isBootstrap(path) ? SGPatchBootstrap(body) : SGPatchCustomize(body);
     if (!result) {
         SGLog(@"could not rewrite %@, passed through", path);
         return nil;
@@ -192,9 +204,16 @@ static void complete(id<NSURLSessionDataDelegate> delegate, NSURLSession *sessio
                 return;
             }
             // Nothing to rewrite: a 304, or a body of no bytes. The delegate is told of a body either
-            // way, since a completion with none hangs some readers.
+            // way, since a completion with none hangs some readers. The plan badge and overview are
+            // synthesized whole, so an empty answer still gets one; the plan row's patch writes its
+            // three fields onto whatever parses, and empty bytes parse as no fields.
             if (!buffer) {
-                deliver(delegate, session, task, (isCustomize(path) ? cached() : nil) ?: [NSData data]);
+                NSData *empty = isCustomize(path) ? cached()
+                    : isPlanBadge(path) ? SGPlanBadge()
+                    : isPlanOverview(path) ? SGPlanOverview()
+                    : isPlanRow(path) ? SGPatchPlanRow([NSData data])
+                    : nil;
+                deliver(delegate, session, task, empty ?: [NSData data]);
                 finish(nil);
                 return;
             }

@@ -457,3 +457,47 @@ NSData *SGPatchCustomize(NSData *body) {
 NSData *SGPatchBootstrap(NSData *body) {
     return SGPBEdit(body, @[@2, @1, @1, @1], ^NSData *(NSData *ucs) { return patchUcs(ucs); });
 }
+
+#pragma mark - the plan page
+
+// The account page's plan row, badge and overview, answered as a Premium account's so what the app
+// shows matches the spoofed state (EeveeSpotifyReincarnated's PremiumPlanRow, reimplemented over the
+// same walker). Named Spotify Premium in Spotify's green rather than after the mod, so the spoof
+// stays invisible; the payment notice Eevee writes is left out, its text came from strings 9.1 no
+// longer ships, and the feature descriptions are literals for the same reason.
+
+// PremiumPlanRow: 3 planName, 4 colorCode, 18 planIdentifier; everything else stays as sent.
+NSData *SGPatchPlanRow(NSData *body) {
+    NSMutableArray<SGPBField *> *fields = SGPBParse(body);
+    if (!fields) return nil;
+    NSMutableArray<SGPBField *> *out = [NSMutableArray array];
+    for (SGPBField *field in fields) {
+        if (field.number == 3 || field.number == 4 || field.number == 18) continue;
+        [out addObject:field];
+    }
+    [out addObject:SGPBString(3, @"Spotify Premium")];
+    [out addObject:SGPBString(4, @"#1ED760")];
+    [out addObject:SGPBString(18, @"premium")];
+    return SGPBSerialize(out);
+}
+
+// YourPremiumBadge: 1 name, 2 version, 3 colorCode.
+NSData *SGPlanBadge(void) {
+    return SGPBSerialize(@[SGPBString(1, @"Premium"), SGPBVarint(2, 2), SGPBString(3, @"#1ED760")]);
+}
+
+// SpotifyPlan: 1 subscription { 2 planVariant, 3 planName, 4 planCategory, 5 colorCode,
+// 20 repeated features { 1 icon (1 is the check), 2 description, 4 color } }.
+static SGPBField *planFeature(NSString *text) {
+    return SGPBBytes(20, SGPBSerialize(@[SGPBVarint(1, 1), SGPBString(2, text), SGPBString(4, @"#1ED760")]));
+}
+
+NSData *SGPlanOverview(void) {
+    NSMutableArray<SGPBField *> *subscription = [NSMutableArray arrayWithObjects:
+        SGPBVarint(2, 2), SGPBString(3, @"Spotify Premium"), SGPBString(4, @"premium"),
+        SGPBString(5, @"#1ED760"), nil];
+    [subscription addObject:planFeature(@"Ad-free music listening")];
+    [subscription addObject:planFeature(@"Play songs in any order")];
+    [subscription addObject:planFeature(@"Organize listening queue")];
+    return SGPBSerialize(@[SGPBBytes(1, SGPBSerialize(subscription))]);
+}
