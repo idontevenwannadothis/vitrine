@@ -1,0 +1,9 @@
+name: push-probe
+
+on: push
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "push triggered"
