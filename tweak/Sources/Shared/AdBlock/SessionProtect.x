@@ -24,8 +24,11 @@ static void SGSessionBlocked(NSString *what) {
 %group SGAuthSession
 %hook SPTAuthSessionImplementation
 - (void)logout {
-    if (sg_allowLogout) { %orig; return; }
-    SGSessionBlocked(@"SPTAuthSession logout");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"SPTAuthSession logout");
+        return;
+    }
+    %orig;
 }
 - (void)logoutWithReason:(id)reason {
     if (!sg_allowLogout) {
@@ -49,8 +52,11 @@ static void SGSessionBlocked(NSString *what) {
     %orig(reason);
 }
 - (void)destroy {
-    if (sg_allowLogout) { %orig; return; }
-    SGSessionBlocked(@"SPTAuthSession destroy");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"SPTAuthSession destroy");
+        return;
+    }
+    %orig;
 }
 %end
 %end
@@ -98,16 +104,25 @@ static void SGSessionBlocked(NSString *what) {
     %orig(session, reason);
 }
 - (void)destroySession {
-    if (sg_allowLogout) { %orig; return; }
-    SGSessionBlocked(@"legacy login destroySession");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"legacy login destroySession");
+        return;
+    }
+    %orig;
 }
 - (void)forgetStoredCredentials {
-    if (sg_allowLogout) { %orig; return; }
-    SGSessionBlocked(@"legacy login forgetStoredCredentials");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"legacy login forgetStoredCredentials");
+        return;
+    }
+    %orig;
 }
 - (void)invalidate {
-    if (sg_allowLogout) { %orig; return; }
-    SGSessionBlocked(@"legacy login invalidate");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"legacy login invalidate");
+        return;
+    }
+    %orig;
 }
 %end
 %end
