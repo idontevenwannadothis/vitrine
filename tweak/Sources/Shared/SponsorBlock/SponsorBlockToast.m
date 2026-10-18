@@ -64,13 +64,15 @@ static UIWindow *keyWindow(void) {
         } else {
             UIButton *button = [UIButton new];
             button.translatesAutoresizingMaskIntoConstraints = NO;
-            button.layer.cornerRadius = 10;
-            button.layer.masksToBounds = YES;
-            button.backgroundColor = [UIColor.whiteColor colorWithAlphaComponent:0.10];
-            [button setTitle:actionTitle forState:UIControlStateNormal];
-            button.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
-            [button setTitleColor:[UIColor colorWithRed:0.18 green:0.84 blue:0.45 alpha:1] forState:UIControlStateNormal];
-            button.contentEdgeInsets = UIEdgeInsetsMake(6, 10, 6, 10);
+            UIButtonConfiguration *config = [UIButtonConfiguration plainButtonConfiguration];
+            config.attributedTitle = [[NSAttributedString alloc] initWithString:actionTitle attributes:@{
+                NSFontAttributeName: [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold],
+            }];
+            config.baseForegroundColor = [UIColor colorWithRed:0.18 green:0.84 blue:0.45 alpha:1];
+            config.contentInsets = NSDirectionalEdgeInsetsMake(6, 10, 6, 10);
+            config.background.backgroundColor = [UIColor.whiteColor colorWithAlphaComponent:0.10];
+            config.background.cornerRadius = 10;
+            button.configuration = config;
             // The handler is kept on the block-based target so the toast owns no state of its caller's.
             objc_setAssociatedObject(button, "sg_handler", handler, OBJC_ASSOCIATION_COPY_NONATOMIC);
             [button addTarget:self action:@selector(tapped:) forControlEvents:UIControlEventTouchUpInside];
