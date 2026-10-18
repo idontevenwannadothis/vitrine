@@ -181,6 +181,8 @@ NSArray<SGLyricsProvider *> *SGLyricsAllProviders(void) {
             make(SGSpicyLyricsKey, @"Spicy Lyrics", @"Community word syncs, your own key", SGSpicyLyricsAsk),
             make(@"qqmusic", @"QQ Music", @"Line timing, Chinese catalog", SGQQMusicAsk),
             make(@"kugou", @"KuGou", @"Word timing, Chinese catalog", SGKuGouAsk),
+            make(@"genius", @"Genius", @"Plain text, wide catalog", SGGeniusAsk),
+            make(@"petitlyrics", @"PetitLyrics", @"Line timing, Japanese catalog", SGPetitLyricsAsk),
             make(SGImportedLRCKey, @"Imported LRC", @"Your own .lrc files", SGImportedLRCAsk),
         ];
     });

@@ -109,11 +109,11 @@ Blocked CMP surfaces count under a new "Message surfaces" row on the Premium pag
   native look only. Per-category actions live under `spotifyglass.sponsorblock.*` on the
   SponsorBlock settings page; skips count under "Segments skipped" on the Premium page. Left out:
   submitting segments (the database is read-only here) and the submission stores/UI.
-- **Lyrics providers.** Vitrine's sources (`Shared/LyricsSources/`) cover BiniLyrics, Unison,
-  Musixmatch, NetEase, LrcLib, SpicyLyrics, QQMusic, KuGou — but not Eevee's **Genius** (line,
-  unsynced) or **PetitLyrics** (Japanese, synced). Add `Genius.m` and `PetitLyrics.m` on the
-  same provider protocol, register in `LyricsSources.m`'s ordered list and `LyricsSourcesPage.m`.
-  Genius is already fetched for *meanings* (`Shared/LyricsMeanings/`) — reuse that session.
+- **Lyrics providers** — **done**: `Genius.m` (mobile API song search + plain-text page, untimed)
+  and `PetitLyrics.m` (form-posted XML API, Japanese catalog, lines timed by the first word's
+  stamp) added on Vitrine's provider protocol, registered in `LyricsSources.m`'s list after KuGou
+  (the sources page is generated from the same list, so no page edit). Vitrine romanizes offline
+  (`Romanise.m`), so Eevee's "Genius Romanizations" hit preference did not come over.
 
 ## What stays impossible (server-side)
 
@@ -154,5 +154,5 @@ and note in each ported file what it came from and that it was reimplemented.
 2. Tier 2 SessionProtection — stops the logout bug. **Done** (`Shared/AdBlock/SessionProtect.x`).
 3. Tier 3 audit — close blocker gaps. **Done** (CMP surfaces, the scroll-feed pipeline, deep-link
    share cleaning).
-4. Tier 4 SponsorBlock (**done**, `Shared/SponsorBlock/`, minus segment submission), then Genius/PetitLyrics.
+4. Tier 4 SponsorBlock (**done**, `Shared/SponsorBlock/`, minus segment submission), then Genius/PetitLyrics (**done**, `Shared/LyricsSources/`).
 5. Onboarding/defaults pass.
