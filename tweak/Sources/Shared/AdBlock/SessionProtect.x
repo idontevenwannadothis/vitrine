@@ -28,16 +28,25 @@ static void SGSessionBlocked(NSString *what) {
     SGSessionBlocked(@"SPTAuthSession logout");
 }
 - (void)logoutWithReason:(id)reason {
-    if (sg_allowLogout) { %orig(reason); return; }
-    SGSessionBlocked(@"SPTAuthSession logoutWithReason:");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"SPTAuthSession logoutWithReason:");
+        return;
+    }
+    %orig(reason);
 }
 - (void)callSessionDidLogoutOnDelegateWithReason:(id)reason {
-    if (sg_allowLogout) { %orig(reason); return; }
-    SGSessionBlocked(@"SPTAuthSession callSessionDidLogoutOnDelegateWithReason:");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"SPTAuthSession callSessionDidLogoutOnDelegateWithReason:");
+        return;
+    }
+    %orig(reason);
 }
 - (void)logWillLogoutEventWithLogoutReason:(id)reason {
-    if (sg_allowLogout) { %orig(reason); return; }
-    SGSessionBlocked(@"SPTAuthSession logWillLogoutEventWithLogoutReason:");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"SPTAuthSession logWillLogoutEventWithLogoutReason:");
+        return;
+    }
+    %orig(reason);
 }
 - (void)destroy {
     if (sg_allowLogout) { %orig; return; }
@@ -68,8 +77,11 @@ static void SGSessionBlocked(NSString *what) {
     });
 }
 - (void)sessionDidLogout:(id)session withReason:(id)reason {
-    if (sg_allowLogout) { %orig(session, reason); return; }
-    SGSessionBlocked(@"SessionService sessionDidLogout:withReason:");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"SessionService sessionDidLogout:withReason:");
+        return;
+    }
+    %orig(session, reason);
 }
 %end
 %end
@@ -79,8 +91,11 @@ static void SGSessionBlocked(NSString *what) {
 %group SGLegacyLogin
 %hook SPTAuthLegacyLoginControllerImplementation
 - (void)sessionDidLogout:(id)session withReason:(id)reason {
-    if (sg_allowLogout) { %orig(session, reason); return; }
-    SGSessionBlocked(@"legacy login sessionDidLogout:withReason:");
+    if (!sg_allowLogout) {
+        SGSessionBlocked(@"legacy login sessionDidLogout:withReason:");
+        return;
+    }
+    %orig(session, reason);
 }
 - (void)destroySession {
     if (sg_allowLogout) { %orig; return; }
