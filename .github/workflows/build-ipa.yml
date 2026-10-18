@@ -47,6 +47,16 @@ jobs:
 
       - run: make release
 
+      # The flag table read out of the IPA. Upload it so it can be set once as the SG_FLAG_LIST
+      # secret, which is what release.yml's compile check reads instead of an IPA:
+      #   gzip -9c SGFlagList.m | base64 | gh secret set SG_FLAG_LIST
+      - name: Upload the flag table
+        uses: actions/upload-artifact@v5
+        with:
+          name: sg-flaglist
+          path: tweak/Sources/Shared/Flags/SGFlagList.m
+          if-no-files-found: warn
+
       - uses: actions/upload-artifact@v5
         if: inputs.upload_method != 'filebin'
         with:

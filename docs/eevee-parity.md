@@ -118,7 +118,9 @@ No Mac needed. The repo already builds IPAs on GitHub Actions:
 2. Run **Build IPA from your own Spotify IPA** with a direct link to a decrypted Spotify
    **9.1.78 / 9.1.88 / 9.1.90** IPA. The workflow builds against the newest SDK and hands back
    `vitrine.ipa`; `make release` derives the flag table from that IPA, so no secret is needed.
-   (`release.yml`'s `.deb` job wants the `SG_FLAG_LIST` secret; the IPA workflow does not.)
+   It also emits that flag table as the `sg-flaglist` artifact: download it and set it once with
+   `gzip -9c SGFlagList.m | base64 | gh secret set SG_FLAG_LIST`, which is what `release.yml`'s
+   compile check reads. Until then that one check job is red; the IPA build is unaffected.
 3. Sign with your certificate and install; test on an iOS 27 device.
 4. Keep `scripts/check-layers.sh` green: all new code here is `<Shared>`, which is the bottom of
    the one-way import chain and may not import `Native/`, `Redesigned/` or `App/`.
