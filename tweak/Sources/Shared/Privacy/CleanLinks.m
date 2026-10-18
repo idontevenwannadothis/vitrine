@@ -61,3 +61,51 @@ id SGCleanLinkObject(id object) {
     if ([object isKindOfClass:NSString.class]) return SGCleanLinksInText(object);
     return object;
 }
+
+// A link the app opens in another app: the share sheet's direct-destination buttons (WhatsApp,
+// Instagram, Telegram...) skip the pasteboard and the sheet and hand the Spotify link over inside
+// a deep link instead -- whatsapp://send?text=...open.spotify.com/track/...?si=... -- so the
+// tracking is taken off here, at the process boundary (EeveeSpotifyReincarnated's deep link
+// cleaning, reimplemented).
+NSURL *SGCleanDeepLinkURL(NSURL *url) {
+    if (![url isKindOfClass:NSURL.class]) return url;
+    // The link being opened is itself a Spotify share link.
+    if (url.host && [url.host caseInsensitiveCompare:kHost] == NSOrderedSame) return SGCleanLinkURL(url);
+    // Spotify links embedded in query values. URLComponents decodes each value, so the text
+    // cleaner sees the plain https://...?si=... form; assigning back re-encodes. Only the changed
+    // values rebuild, and receivers decode query strings leniently, so the re-encoding of the
+    // untouched items is safe.
+    NSURLComponents *parts = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+    NSArray<NSURLQueryItem *> *items = parts.queryItems;
+    if (items.count) {
+        NSMutableArray<NSURLQueryItem *> *cleaned = nil;
+        for (NSUInteger i = 0; i < items.count; i++) {
+            NSURLQueryItem *item = items[i];
+            if (!item.value) continue;
+            NSString *clean = SGCleanLinksInText(item.value);
+            if (clean == item.value) continue;
+            if (!cleaned) cleaned = [items mutableCopy];
+            cleaned[i] = [NSURLQueryItem queryItemWithName:item.name value:clean];
+        }
+        if (cleaned) {
+            parts.queryItems = cleaned;
+            if (parts.URL) return parts.URL;
+        }
+    }
+    // A payload URLComponents cannot parse: clean any Spotify links in the raw string.
+    NSString *raw = url.absoluteString;
+    NSString *clean = SGCleanLinksInText(raw);
+    return clean == raw ? url : [NSURL URLWithString:clean] ?: url;
+}
+
+// Pasteboard bytes that are not text: an NSURL keyed-archived under public.url. Secure coding
+// only; anything else comes back as it is.
+NSData *SGCleanLinkData(NSData *data) {
+    if (![data isKindOfClass:NSData.class]) return data;
+    NSURL *url = [NSKeyedUnarchiver unarchivedObjectOfClass:NSURL.class fromData:data error:NULL];
+    if (!url) return data;
+    NSURL *clean = SGCleanLinkURL(url);
+    if (clean == url) return data;
+    NSData *rearchived = [NSKeyedArchiver archivedDataWithRootObject:clean requiringSecureCoding:YES error:NULL];
+    return rearchived ?: data;
+}

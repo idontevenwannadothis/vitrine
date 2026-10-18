@@ -72,18 +72,32 @@ stays green (all new code is `Shared/`).
 | `CarPlayCrashFix.x.swift` | The CarPlay launch crash. | guard on class presence |
 | `DataLoaderServiceHooks.x.swift` | The data-loader service surface Eevee hooks for Premium. | fold into `Shared/AdBlock` |
 
-### Tier 3 — Blocker coverage (audit Vitrine's `AdBlock` against Eevee)
+### Tier 3 — Blocker coverage (audit Vitrine's `AdBlock` against Eevee) — **done**
 
-Vitrine's equivalents: `AdServices.x`, `AdHubs.x`, `AdPopups.x`, `AdNetwork.x`, `Feeds.m`.
-Read each Eevee file, confirm Vitrine covers the same request/class, and port the misses:
+Audited 2026-10-18 against `Master`, every class checked against the 9.1.90 binary before porting.
+Already covered: `UpsellPopupBlocker.x.swift` (`AdPopups.x`), `UpsellServiceBlocker.x.swift` (the
+Upsells group in `AdServices.x`, class for class), `HubsAdBlocker.x.swift` (`AdHubs.x`, same words),
+`HttpClientURLSessionHooks.x.swift` and `DataLoaderServiceHooks.x.swift` (`AdNetwork.x`; Vitrine
+answers the warm-relaunch 304 differently — it strips the request's validators so the server never
+answers 304 at all — and does not need Eevee's persisted customize copy). Ported, all reimplemented:
 
-- `ClientMessagingPlatformBlocker.x.swift` — in-app messaging / upsell banners.
-- `UpsellPopupBlocker.x.swift`, `UpsellServiceBlocker.x.swift` — compare with `AdPopups.x`/`AdServices.x`.
-- `CleanShareLinks.x.swift` — compare with Vitrine's `Shared/Privacy/CleanLinks.x`; port only what differs.
-- `HttpClientURLSessionHooks.x.swift` — the URLSession interception points, if Vitrine's differ.
+- `ClientMessagingPlatformBlocker.x.swift` → new `Shared/AdBlock/AdMessages.x` (Hide upsells): the
+  fullscreen, modal and bottom-sheet CMP containers dismissed in `viewWillAppear:`, the CMP banner,
+  both Premium upsell banner elements and the upsell control panel taken down on attach. CMP's
+  network fetch was only blocked with Spoof Premium on; this net covers every switch combination.
+- `EeveeAdBlockerExtended.x.swift` → the Ads group in `AdServices.x`: the scroll-feed and embedded
+  pipelines one layer deeper (`EmbeddedCTAElementsServiceImpl`, `EmbeddedAdControllerServiceImpl`,
+  `EmbeddedAdAdapterElementProvider`, both playlist ad controllers, `LeavebehindAdElementProvider`)
+  and the `EmbeddedAdAdapterElementUI` / `HtmlAdElementUI` view fallbacks. Left out: `DSAMainView`
+  (the legal ad-transparency notice, moot with no ad) and the passive `AdModelChangedEventSource`
+  probe (log only).
+- `CleanShareLinks.x.swift` → `Shared/Privacy/CleanLinks.x`: `UIApplication.openURL` deep-link
+  cleaning for the share sheet's direct-destination buttons (`SGCleanDeepLinkURL`), and
+  keyed-archived NSURLs on the pasteboard (`SGCleanLinkData`, secure coding only). The pasteboard
+  and share-sheet coverage Vitrine already had is wider (more parameters, per-class provider
+  swizzling).
 
-Keep the existing "hooks install together only when the runtime signatures match" guard
-(`AdBlock.h` comment) around anything new.
+Blocked CMP surfaces count under a new "Message surfaces" row on the Premium page.
 
 ### Tier 4 — New capability
 
@@ -135,6 +149,7 @@ and note in each ported file what it came from and that it was reimplemented.
 1. Tier 1 (unlocks) — small, testable, visible. **Done** (`Shared/PremiumUI/`; DarkPopUps and the
    Premium plan row remain).
 2. Tier 2 SessionProtection — stops the logout bug. **Done** (`Shared/AdBlock/SessionProtect.x`).
-3. Tier 3 audit — close blocker gaps.
+3. Tier 3 audit — close blocker gaps. **Done** (CMP surfaces, the scroll-feed pipeline, deep-link
+   share cleaning).
 4. Tier 4 SponsorBlock, then Genius/PetitLyrics.
 5. Onboarding/defaults pass.

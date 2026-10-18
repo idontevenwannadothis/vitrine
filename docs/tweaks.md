@@ -78,7 +78,8 @@ A feature is a directory in its layer holding everything about one area of the a
 Shared:
 
     AdBlock/      EeveeSpotify's ad blocking: the ad and upsell services silenced (AdServices.x), ad components out of the
-                  Hub JSON (AdHubs.x) and the feeds (Feeds.m), Premium pop-ups dropped (AdPopups.x), and the responses
+                  Hub JSON (AdHubs.x) and the feeds (Feeds.m), Premium pop-ups dropped (AdPopups.x), the
+                  ClientMessagingPlatform's marketing surfaces dismissed as they present (AdMessages.x), and the responses
                   rewritten on the way in (AdNetwork.x, Premium.m over the protobuf walker in Protobuf.m), with crossfade
                   and automix switched on in the player core and crossfade's switch kept in step with its slider (Crossfade.x).
                   Spoof Premium's session is held together while the server disagrees: the logout endpoints answered as if

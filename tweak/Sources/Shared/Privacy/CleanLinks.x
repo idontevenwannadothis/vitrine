@@ -1,5 +1,5 @@
-// Clean shared links (CleanLinks.m): every open.spotify.com link the app puts on the pasteboard or hands to the
-// share sheet goes out without its tracking.
+// Clean shared links (CleanLinks.m): every open.spotify.com link the app puts on the pasteboard, hands to the
+// share sheet or sends to another app inside a deep link goes out without its tracking.
 //
 // Spotify's binary sends -setString:, -setURL:, -setItems:, -setItems:options: and -setData:forPasteboardType:
 // to the pasteboard, and builds its share sheet with -initWithActivityItems:applicationActivities: and a
@@ -38,8 +38,9 @@ static BOOL isTextType(NSString *type) {
 
 static id cleanValue(id value, NSString *type) {
     if (![value isKindOfClass:NSData.class]) return SGCleanLinkObject(value);
-    if (!isTextType(type)) return value;
+    if (!isTextType(type)) return SGCleanLinkData(value);
     NSString *text = [[NSString alloc] initWithData:value encoding:NSUTF8StringEncoding];
+    if (!text) return SGCleanLinkData(value);
     NSString *cleaned = SGCleanLinksInText(text);
     return cleaned == text ? value : [cleaned dataUsingEncoding:NSUTF8StringEncoding];
 }
@@ -162,6 +163,18 @@ static void cleanSource(id item) {
         [cleaned addObject:item];
     }
     return %orig(cleaned, activities);
+}
+%end
+
+#pragma mark - the deep links out
+
+// The share sheet's direct-destination buttons (WhatsApp, Instagram, Telegram...) skip the
+// pasteboard and the sheet and hand the Spotify link to the other app inside a deep link, so the
+// tracking is taken off at the process boundary (EeveeSpotifyReincarnated's deep link cleaning,
+// reimplemented in CleanLinks.m).
+%hook UIApplication
+- (void)openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenExternalURLOptionsKey, id> *)options completionHandler:(void (^)(BOOL))completion {
+    %orig(cleaning() ? SGCleanDeepLinkURL(url) : url, options, completion);
 }
 %end
 

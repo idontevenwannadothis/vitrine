@@ -14,6 +14,12 @@ NSURL *SGCleanLinkURL(NSURL *url);
 NSString *SGCleanLinksInText(NSString *text);
 // Either of the two by the object's class; anything else comes back as it is.
 id SGCleanLinkObject(id object);
+// A link the app opens in another app with any Spotify share links inside it cleaned: itself when
+// it is one, the query values' contents otherwise (the share sheet's direct-destination buttons),
+// or `url` itself when there was nothing to clean.
+NSURL *SGCleanDeepLinkURL(NSURL *url);
+// Pasteboard bytes holding a keyed-archived NSURL, cleaned; anything else comes back as it is.
+NSData *SGCleanLinkData(NSData *data);
 
 // The destinations it knows in the order it lists them, and how many requests to one of them it
 // has answered instead of letting out (nil label for all of them).
