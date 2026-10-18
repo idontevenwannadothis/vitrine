@@ -86,7 +86,7 @@ static NSString *formEncode(NSDictionary<NSString *, NSString *> *fields) {
     static NSMutableCharacterSet *allowed;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        allowed = [NSCharacterSet URLQueryAllowedCharacterSet mutableCopy];
+        allowed = [NSCharacterSet.URLQueryAllowedCharacterSet mutableCopy];
         [allowed removeCharactersInString:@"&=+?"];
     });
     NSMutableArray<NSString *> *pairs = [NSMutableArray array];
