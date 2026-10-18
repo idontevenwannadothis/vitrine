@@ -118,6 +118,7 @@ __attribute__((constructor)) static void registerForcer(void) {
 static NSString *const kCounts = @"spotifyglass.adblock.counts";
 static NSString *const labels[] = {
     @"Ad services", @"Upsell services", @"Popups", @"Page components", @"Feed sections", @"Requests", @"Config rewrites",
+    @"Logouts",
 };
 static NSMutableDictionary<NSString *, NSNumber *> *sg_counts;
 static BOOL sg_unsaved;   // checks counted since the counts were last written
@@ -128,7 +129,7 @@ static NSString *checkedKey(NSString *label) {
 
 // The kinds whose hooks count what they look at. The services are stubs Spotify loads, with nothing to look at.
 static BOOL countsChecks(NSString *label) {
-    return [@[@"Popups", @"Page components", @"Feed sections", @"Requests", @"Config rewrites"] containsObject:label];
+    return [@[@"Popups", @"Page components", @"Feed sections", @"Requests", @"Config rewrites", @"Logouts"] containsObject:label];
 }
 
 // Counting happens on whichever thread the hook ran on, the page reads on the main one.

@@ -68,7 +68,7 @@ stays green (all new code is `Shared/`).
 
 | Eevee file | What to port | Notes |
 |---|---|---|
-| `Premium/SessionProtection.x.swift` | Keep the session alive while the server disagrees, so Spoof Premium does not log the user out. Vitrine has a piece in `AdNetwork.x` ("keeps the session alive"); audit it against this file and close the gap. | highest-value robustness item |
+| `SessionProtection.x.swift` (repo root, not `Premium/`) | Keep the session alive while the server disagrees, so Spoof Premium does not log the user out. **Built** as `Shared/AdBlock/SessionProtect.x`: the auth session's logout/destroy, the connectivity session's automated logout, the legacy controller's credential wipe, and the OAuth token bridge's expiry are all held, with a main-thread window for a logout the user asks for. The network half (logout endpoints answered OK, DeleteToken canceled) was already `AdNetwork.x`'s. Ably hooks left out: Eevee does not turn them on for 9.1 either. | the session's ObjC layer was the gap |
 | `CarPlayCrashFix.x.swift` | The CarPlay launch crash. | guard on class presence |
 | `DataLoaderServiceHooks.x.swift` | The data-loader service surface Eevee hooks for Premium. | fold into `Shared/AdBlock` |
 
@@ -132,8 +132,9 @@ and note in each ported file what it came from and that it was reimplemented.
 
 ## Order of work
 
-1. Tier 1 (unlocks) — small, testable, visible.
-2. Tier 2 SessionProtection — stops the logout bug.
+1. Tier 1 (unlocks) — small, testable, visible. **Done** (`Shared/PremiumUI/`; DarkPopUps and the
+   Premium plan row remain).
+2. Tier 2 SessionProtection — stops the logout bug. **Done** (`Shared/AdBlock/SessionProtect.x`).
 3. Tier 3 audit — close blocker gaps.
 4. Tier 4 SponsorBlock, then Genius/PetitLyrics.
 5. Onboarding/defaults pass.

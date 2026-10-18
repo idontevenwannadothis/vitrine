@@ -81,6 +81,10 @@ Shared:
                   Hub JSON (AdHubs.x) and the feeds (Feeds.m), Premium pop-ups dropped (AdPopups.x), and the responses
                   rewritten on the way in (AdNetwork.x, Premium.m over the protobuf walker in Protobuf.m), with crossfade
                   and automix switched on in the player core and crossfade's switch kept in step with its slider (Crossfade.x).
+                  Spoof Premium's session is held together while the server disagrees: the logout endpoints answered as if
+                  they succeeded (AdNetwork.x), the auth session's logout and destroy, the connectivity session's automated
+                  logout and the legacy controller's credential wipe blocked, and the OAuth token's expiry pushed out
+                  (SessionProtect.x); a user's own logout on the main thread still goes through.
                   With Spoof Premium on, RadioModes.m enables shuffle and repeat for radio/autoplay in either look:
                   only restrictions made entirely of radio, endless_context and autoplay are allowed.
                   Raw reason sets remain intact when Spotify copies its state. Positive radio evidence survives

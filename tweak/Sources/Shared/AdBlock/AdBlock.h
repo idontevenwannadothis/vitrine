@@ -5,7 +5,9 @@
 // them off (AdBlock.m, through Flags.x). Spoof Premium rewrites the product state and remote
 // config as they arrive (Premium.m), crossfade and automix included (Crossfade.x), enables shuffle
 // and repeat in radio/autoplay (RadioModes.m), and keeps the
-// session alive when the server disagrees (AdNetwork.x). Hide the video carousel in Search forces its
+// session alive when the server disagrees: its logout endpoints answered as if they succeeded
+// (AdNetwork.x), the session's own logout, destroy and credential-wipe calls held (SessionProtect.x).
+// Hide the video carousel in Search forces its
 // flag off (AdBlock.m, through Flags.x).
 #import <UIKit/UIKit.h>
 
