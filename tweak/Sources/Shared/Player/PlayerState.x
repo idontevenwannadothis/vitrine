@@ -10,6 +10,7 @@ NSString *SGURIString(id uri) {
 
 static NSHashTable<id<SGPlayerStateObserver>> *sg_stateObservers;
 static SPTPlayerState *sg_playerState;
+static __weak id sg_player;
 static NSString *sg_stateKey;
 // Set once the now playing platform has reported; the mod's own observer on the player stands down.
 static BOOL sg_platformReported = NO;
@@ -22,6 +23,10 @@ void SGAddPlayerStateObserver(id<SGPlayerStateObserver> observer) {
 
 SPTPlayerState *SGPlayerState(void) {
     return sg_playerState;
+}
+
+id SGPlayer(void) {
+    return sg_player;
 }
 
 // What an observer is told about; the state object itself is new with every position report.
@@ -43,11 +48,12 @@ static void publish(SPTPlayerState *state) {
     for (id<SGPlayerStateObserver> observer in sg_stateObservers.allObjects) [observer playerStateDidChange:state];
 }
 
-static void report(id state, BOOL platform) {
+static void report(id player, id state, BOOL platform) {
     if (![state isKindOfClass:objc_getClass("SPTPlayerState")]) return;
     dispatch_block_t apply = ^{
         if (platform) sg_platformReported = YES;
         else if (sg_platformReported) return;
+        if (player) sg_player = player;
         publish(state);
     };
     if (NSThread.isMainThread) apply();
@@ -59,7 +65,7 @@ static void report(id state, BOOL platform) {
 
 @implementation SGPlayerObserver
 - (void)player:(id)player stateDidChange:(id)state {
-    report(state, NO);
+    report(player, state, NO);
 }
 @end
 
@@ -72,7 +78,7 @@ static SGPlayerObserver *sg_ownObserver;
     dispatch_once(&once, ^{
         SGLog(@"player state: from %@, a %@, on the main thread %d", [player class], [state class], NSThread.isMainThread);
     });
-    report(state, YES);
+    report(player, state, YES);
 }
 %end
 
@@ -88,7 +94,7 @@ static SGPlayerObserver *sg_ownObserver;
             sg_ownObserver = [SGPlayerObserver new];
             [(id<SPTPlayer>)player addPlayerObserver:sg_ownObserver];
             id state = [player respondsToSelector:@selector(state)] ? [(id<SPTPlayer>)player state] : nil;
-            if (state) report(state, NO);
+            if (state) report(player, state, NO);
         });
     });
 }

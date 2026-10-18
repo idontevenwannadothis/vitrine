@@ -268,6 +268,16 @@ Shared:
                   pause and back a second later, at once on a cancel or a later time. It stands aside while the mod's
                   own timer runs and while Spotify's own Fade out flag (its DuckHandlerImpl's duck) is forced on.
                   Tested on the Mac against harness/sleep-timer/, the gain in the simulator against harness/speed/
+    SponsorBlock/ SponsorBlock for podcasts, reimplemented from EeveeSpotify (SponsorBlock.h lists the keys):
+                  the episode playing's marks fetched from sponsor.ajay.app by its hash prefix (SponsorBlockAPI.m),
+                  held against the player's state by a Shared/Player state observer with no hook of its own
+                  (SponsorBlockSkipper.m, a 250 ms estimate between reports), each part whose category is set to
+                  Skip jumped over with the player's own seekTo: (SGPlayer()), a toast with Undo after
+                  (SponsorBlockToast.m). A part sought into on purpose is left alone (Respect your seeks), a skip
+                  undone plays through to its end; skips count under "Segments skipped" on the Premium page.
+                  The native player's progress bar shows the parts as colored bands (SponsorBlockOverlay.x on the
+                  ECMKit slider, touch-through; the redesign draws its own player and shows none). Episodes only —
+                  a music track is never sought — and the database is read-only: submitting marks is not here.
     AudioEffects/ the audio effects on Spotify's sound (AudioEffects.h has the keys and the page's calls): a render
                   notify on the music's RemoteIO unit (SGPlayerMusicOutput, Shared/Player) runs each finished buffer through the mod's own engine, re-blocked to 1024 frames one block late,
                   in place (AudioEffects.x, SGDSPEngine.m), then hands it, mixed to mono, to one reader that only

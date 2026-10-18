@@ -29,6 +29,7 @@
 #import "Shared/HeadGestures/HeadGestures.h"
 #import "Shared/Player/PlayerSettings.h"
 #import "Shared/Sing/Sing.h"
+#import "Shared/SponsorBlock/SponsorBlock.h"
 #import "Shared/Haptics/Haptics.h"
 #import "App/About/About.h"
 #import "App/Onboarding/Onboarding.h"
@@ -96,7 +97,10 @@ static UIViewController *modSettingsPage(void) {
     // AutoMix sets Spotify's own Automix and Crossfade, which its player does under either look.
     SGModRow *autoMix = pageRow(@"AutoMix", @"arrow.triangle.merge", SGColorRGB(0xF05D6C), ^UIViewController *{ return SGAutoMixSettingsPage(); });
     autoMix.value = ^NSString *{ return SGAutoMixSummary(); };
-    NSMutableArray<SGModRow *> *features = [NSMutableArray arrayWithObjects:sing, spatial, audioEffects, autoMix, nil];
+    // SponsorBlock only meets podcast episodes, but its skip is the player's own under either look.
+    SGModRow *sponsorBlock = pageRow(@"SponsorBlock", @"forward.frame.fill", SGColorRGB(0x00D400), ^UIViewController *{ return SGSponsorBlockSettingsPage(); });
+    sponsorBlock.value = ^NSString *{ return SGSponsorBlockOn() ? nil : @"Off"; };
+    NSMutableArray<SGModRow *> *features = [NSMutableArray arrayWithObjects:sing, spatial, audioEffects, autoMix, sponsorBlock, nil];
     // The Live Activity works under both looks, where ActivityKit's card does.
     if (@available(iOS 17.0, *)) {
         SGModRow *liveActivity = pageRow(@"Live Activity", @"iphone", UIColor.systemOrangeColor, ^UIViewController *{ return SGLiveActivitySettingsPage(); });

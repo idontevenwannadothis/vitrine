@@ -101,11 +101,14 @@ Blocked CMP surfaces count under a new "Message surfaces" row on the Premium pag
 
 ### Tier 4 — New capability
 
-- **SponsorBlock** (`Sources/EeveeSpotify/SponsorBlock/`): skip podcast sponsor segments using
-  the public SponsorBlock API. A real subsystem — `SponsorBlockAPI`, `SponsorBlockHash`, a
-  skipper/overlay/toast — and Vitrine has nothing like it. Home: new `Shared/SponsorBlock/`.
-  It reads the player's position through `Shared/Player/PlayerState.x` and seeks with Spotify's
-  player, both of which exist. Own `spotifyglass.sponsorblock.*` keys and settings page.
+- **SponsorBlock** (`Sources/EeveeSpotify/SponsorBlock/`) → `Shared/SponsorBlock/`: **done** —
+  skip podcast sponsor segments using the public SponsorBlock API. The skipper
+  (`SponsorBlockSkipper.m`) is a `Shared/Player` state observer and seeks with the player's own
+  `seekTo:` (exposed as `SGPlayer()`), the API client (`SponsorBlockAPI.m`) and the toast are
+  straight ports, the overlay (`SponsorBlockOverlay.x`) draws the ECMKit slider's bands on the
+  native look only. Per-category actions live under `spotifyglass.sponsorblock.*` on the
+  SponsorBlock settings page; skips count under "Segments skipped" on the Premium page. Left out:
+  submitting segments (the database is read-only here) and the submission stores/UI.
 - **Lyrics providers.** Vitrine's sources (`Shared/LyricsSources/`) cover BiniLyrics, Unison,
   Musixmatch, NetEase, LrcLib, SpicyLyrics, QQMusic, KuGou — but not Eevee's **Genius** (line,
   unsynced) or **PetitLyrics** (Japanese, synced). Add `Genius.m` and `PetitLyrics.m` on the
@@ -151,5 +154,5 @@ and note in each ported file what it came from and that it was reimplemented.
 2. Tier 2 SessionProtection — stops the logout bug. **Done** (`Shared/AdBlock/SessionProtect.x`).
 3. Tier 3 audit — close blocker gaps. **Done** (CMP surfaces, the scroll-feed pipeline, deep-link
    share cleaning).
-4. Tier 4 SponsorBlock, then Genius/PetitLyrics.
+4. Tier 4 SponsorBlock (**done**, `Shared/SponsorBlock/`, minus segment submission), then Genius/PetitLyrics.
 5. Onboarding/defaults pass.
