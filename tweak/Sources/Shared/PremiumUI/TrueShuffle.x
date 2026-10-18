@@ -29,7 +29,7 @@ static void SGPremiumUIKillBool(Class cls, NSString *selectorName, BOOL takesArg
 }
 
 %ctor {
-    if (!SGHidden(SGKeyTrueShuffle)) return;
+    if (!SGEnabled(SGKeyTrueShuffle)) return;
     Class cls = SGPremiumUIClassWithSuffix(@"SmartShuffleHandlerImplementation");
     if (!cls) {
         SGLog(@"premiumui: SmartShuffleHandler not found, true shuffle inactive");

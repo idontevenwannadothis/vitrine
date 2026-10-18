@@ -34,7 +34,7 @@
 %end
 
 %ctor {
-    if (!SGHidden(SGKeySiriRadio)) return;
+    if (!SGEnabled(SGKeySiriRadio)) return;
     %init;
     SGRequireClasses(@[@"INMediaItem"]);
 }

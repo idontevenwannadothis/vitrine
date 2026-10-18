@@ -8,7 +8,8 @@
 //   TrueShuffle  shuffle stops Smart Shuffle injecting recommended, non-playlist tracks
 //   SiriRadio    "Play <artist>" from Siri plays the artist, not a radio station made from it
 //
-// Each is off until asked for. Works under either look: these are Spotify's own screens' behavior.
+// Each is on until switched off: they are the Spotify++ defaults, and a reset (stock) turns them
+// off with everything else. Works under either look: these are Spotify's own screens' behavior.
 #import <UIKit/UIKit.h>
 #import "Settings/SGModPage.h"
 

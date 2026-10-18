@@ -140,7 +140,7 @@ static void takeDownElement(id element) {
 %end
 
 %ctor {
-    if (SGHidden(SGKeyHideAds)) {
+    if (SGEnabled(SGKeyHideAds)) {
         %init(Ads);
         SGRequireClasses(@[
             @"_TtC19AdsPlatform_AdsImpl14AdsServiceImpl",
@@ -164,7 +164,7 @@ static void takeDownElement(id element) {
             @"_TtC22AdsPlatform_ElementKit15HtmlAdElementUI",
         ]);
     }
-    if (SGHidden(SGKeyHideUpsells)) {
+    if (SGEnabled(SGKeyHideUpsells)) {
         %init(Upsells);
         SGRequireClasses(@[
             @"_TtC19Upsells_ServiceImpl18UpsellsServiceImpl",

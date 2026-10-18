@@ -123,9 +123,11 @@ downloading, Jam hosting, AI DJ/Playlist, and Spotify Connect as a remote. Vitri
 
 ## Defaults
 
-Spotify++ is a "turn it on and forget it" product. Ship the AdBlock set and Tier 1 on by default
-(or a one-tap "Enable Spotify++" in the tour), keep anything with a trade-off (Spoof Premium's
-warning, SponsorBlock categories) opt-in.
+**Done.** Spotify++ is a "turn it on and forget it" product: Hide ads, Hide upsells, Hide the
+video carousel in Search and the four PremiumUI parts read on until switched off (`SGEnabled`; a
+reset still returns stock Spotify), and the tour's old "No ads" card is now a Spoof Premium card —
+the one switch with a trade-off keeps its warning and stays opt-in, SponsorBlock and its
+categories likewise.
 
 ## Build and verify
 
@@ -155,4 +157,5 @@ and note in each ported file what it came from and that it was reimplemented.
 3. Tier 3 audit — close blocker gaps. **Done** (CMP surfaces, the scroll-feed pipeline, deep-link
    share cleaning).
 4. Tier 4 SponsorBlock (**done**, `Shared/SponsorBlock/`, minus segment submission), then Genius/PetitLyrics (**done**, `Shared/LyricsSources/`).
-5. Onboarding/defaults pass.
+5. Onboarding/defaults pass. **Done**: the AdBlock set and Tier 1 ship on by default; the tour
+   offers Spoof Premium alone.

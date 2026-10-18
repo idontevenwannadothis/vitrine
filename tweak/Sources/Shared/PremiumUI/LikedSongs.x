@@ -54,7 +54,7 @@ static NSDictionary *SGPremiumUILikedRow(void) {
 %end
 
 %ctor {
-    if (!SGHidden(SGKeyLikedSongs)) return;
+    if (!SGEnabled(SGKeyLikedSongs)) return;
     if (!NSClassFromString(@"HUBViewModelBuilderImplementation")) {
         SGLog(@"premiumui: HUBViewModelBuilderImplementation missing, liked songs row inactive");
         return;

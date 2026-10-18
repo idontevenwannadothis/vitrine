@@ -1,4 +1,6 @@
-// EeveeSpotify's layers, ported, at the top of the Premium, ads & privacy page. Three switches, each off until asked for. Hide ads
+// EeveeSpotify's layers, ported, at the top of the Premium, ads & privacy page. Hide ads, Hide
+// upsells and Hide the video carousel in Search are on until switched off — the Spotify++ defaults;
+// Spoof Premium is off until asked for, with its warning. Hide ads
 // keeps the ad services from starting (AdServices.x), takes ad components out of Home and Search
 // before they render (AdHubs.x, Feeds.m) and answers the requests behind them empty (AdNetwork.x).
 // Hide upsells drops the Premium prompts (AdPopups.x, AdServices.x), the ClientMessagingPlatform's

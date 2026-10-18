@@ -17,7 +17,7 @@
 %end
 
 %ctor {
-    if (!SGHidden(SGKeyTrackRows)) return;
+    if (!SGEnabled(SGKeyTrackRows)) return;
     SEL selector = @selector(initWithViewURI:onDemandSet:onDemandTrialService:trackRowsEnabled:productState:);
     if (![UIView instancesRespondToSelector:selector]) {
         SGLog(@"premiumui: no %@ on UIView, track rows inactive", NSStringFromSelector(selector));

@@ -338,7 +338,7 @@ static NSURLRequest *unconditional(NSURLRequest *request) {
 %end
 
 %ctor {
-    ads = SGHidden(SGKeyHideAds);
+    ads = SGEnabled(SGKeyHideAds);
     premium = SGHidden(SGKeyFakePremium);
     if (!ads && !premium) return;
     started = NSDate.date;

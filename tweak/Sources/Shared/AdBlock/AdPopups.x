@@ -67,7 +67,7 @@ static id readKey(id object, NSString *key) {
 %end
 
 %ctor {
-    if (!SGHidden(SGKeyHideUpsells)) return;
+    if (!SGEnabled(SGKeyHideUpsells)) return;
     %init;
     SGRequireClasses(@[@"SPTEncorePopUpDialogModel", @"SPTEncorePopUpDialog", @"SPTEncorePopUpPresenter"]);
 }

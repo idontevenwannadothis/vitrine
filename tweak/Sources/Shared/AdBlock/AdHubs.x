@@ -113,8 +113,8 @@ static NSArray *filtered(NSArray *components) {
 %end
 
 %ctor {
-    ads = SGHidden(SGKeyHideAds);
-    upsells = SGHidden(SGKeyHideUpsells);
+    ads = SGEnabled(SGKeyHideAds);
+    upsells = SGEnabled(SGKeyHideUpsells);
     if (!ads && !upsells) return;
     %init;
     SGRequireClasses(@[@"HUBViewModelBuilderImplementation"]);

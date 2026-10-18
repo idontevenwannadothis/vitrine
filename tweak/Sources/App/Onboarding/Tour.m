@@ -328,9 +328,10 @@ static UIStackView *noteLine(UIImageView *icon, UILabel *text) {
     return line;
 }
 
-// The three switches at the top of the Premium, ads & privacy page, which the No ads card sets together.
+// The Spoof Premium switch of the Premium, ads & privacy page, the one Spotify++ switch with a
+// trade-off: the ads and upsells are gone by default, so the tour's card offers only the spoof.
 static NSArray<NSString *> *adKeys(void) {
-    return @[SGKeyHideAds, SGKeyHideUpsells, SGKeyFakePremium];
+    return @[SGKeyFakePremium];
 }
 
 static BOOL adFree(void) {
@@ -458,24 +459,25 @@ static BOOL adFree(void) {
     _legacy.selected = !redesigned;
     _note = [self noteView];
 
-    // Spotify without its ads: one switch for Hide ads, Hide upsells and Spoof Premium. Off leaves each as it
-    // is; the tour again shows on only while all three are. They are read at launch, so on ends in a restart.
+    // Spoof Premium, the one Spotify++ switch left to ask for: the ads and upsells are blocked by
+    // default. Off leaves it as it is; the tour again shows on only while it is. It is read at
+    // launch, so on ends in a restart.
     _ads = [UISwitch new];
     _ads.onTintColor = SGGreen();
     _ads.on = adFree();
-    _adsCard = [[SGLookCard alloc] initWithSymbol:@"speaker.slash" title:@"No ads"
-                                         subtitle:@"No ads, no Premium upsells, and Premium spoofed." accessory:_ads];
+    _adsCard = [[SGLookCard alloc] initWithSymbol:@"star" title:@"Spoof Premium"
+                                         subtitle:@"Your account reads Premium, on top of the ads already gone." accessory:_ads];
     [_adsCard addTarget:self action:@selector(toggleAds) forControlEvents:UIControlEventTouchUpInside];
     _adsCard.isAccessibilityElement = YES;
-    _adsCard.accessibilityLabel = @"No ads";
-    _adsCard.accessibilityHint = @"No ads, no Premium upsells, and Premium spoofed.";
+    _adsCard.accessibilityLabel = @"Spoof Premium";
+    _adsCard.accessibilityHint = @"Your account reads Premium, on top of the ads already gone.";
     _adsCard.accessibilityValue = _ads.on ? @"On" : @"Off";
     if (@available(iOS 17.0, *)) _adsCard.accessibilityTraits = UIAccessibilityTraitToggleButton;
     else _adsCard.accessibilityTraits = UIAccessibilityTraitButton;
     UILabel *adsText = [UILabel new];
-    adsText.text = @"Three switches of Premium, ads & privacy, applied at the restart; off leaves each as it is. Spoof Premium is "
-                   @"untested and can end in a forced logout; a Premium account gains nothing from it. Offline, audio quality and "
-                   @"sessions stay the server's.";
+    adsText.text = @"Ads, upsells and the Spotify++ page parts are gone by default; this adds the spoof, applied at the "
+                   @"restart. Spoof Premium is untested and can end in a forced logout; a Premium account gains nothing "
+                   @"from it. Offline, audio quality and sessions stay the server's.";
     UIStackView *adsNote = noteLine(SGSymbolView(@"info.circle.fill", 15, UIImageSymbolWeightSemibold, 22), adsText);
     adsNote.arrangedSubviews.firstObject.tintColor = SGGrey();
     adsNote.layoutMargins = UIEdgeInsetsMake(4, 4, 0, 4);

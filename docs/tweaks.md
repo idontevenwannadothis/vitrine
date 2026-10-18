@@ -96,6 +96,12 @@ Shared:
     Privacy/      telemetry blocking and its counters, and the tracking taken off shared open.spotify.com links
                   (CleanLinks.x over the cleaner in CleanLinks.m)
     ArtistBlock/  tracks by blocked artists skipped as they start (ArtistSkip.x), the list and the Blocked artists page under Player
+    PremiumUI/    the Spotify++ unlocks (PremiumUI.h lists the keys), each on until switched off: the artist
+                  page's top tracks as playable rows instead of a collapsed card (TrackRows.x), a Liked Songs
+                  row above them (LikedSongs.x), shuffle without Smart Shuffle's injected recommendations
+                  (TrueShuffle.x), and "Play <artist>" from Siri playing the artist rather than a radio made
+                  from it (SiriRadio.x). None of it needs Spoof Premium; the section sits on the Premium,
+                  ads & privacy page.
     Flags/        Spotify's remote-config flags: the provider hook, the generated table, the All flags page and the Labs page;
                   the provider pins 9.1.88's ios-reprise-liquid-glass-override.mode to default in both looks (after an All flags
                   override) and logs the server's own value once, as a force_disabled would take the glass off the redesign.

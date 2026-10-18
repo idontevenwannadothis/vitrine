@@ -54,7 +54,7 @@ static NSString *hiddenKeyFor(UICollectionViewCell *cell) {
     }
     NSString *names = nil;
     // Only the player's cards are looked into: their content view names the page, which every other list's does not.
-    if (SGHidden(SGKeyHideAds)) {
+    if (SGEnabled(SGKeyHideAds)) {
         UIView *content = cell.contentView.subviews.firstObject;
         if ([NSStringFromClass(content.class) containsString:@"NowPlaying_ScrollAPI"] && holdsAd(cell)) return SGKeyHideAds;
     }

@@ -108,7 +108,7 @@ static void SGAdMessagesHookUpsellBanner(void) {
 }
 
 %ctor {
-    if (!SGHidden(SGKeyHideUpsells)) return;
+    if (!SGEnabled(SGKeyHideUpsells)) return;
     %init;
     SGAdMessagesHookUpsellBanner();
     SGRequireClasses(@[
