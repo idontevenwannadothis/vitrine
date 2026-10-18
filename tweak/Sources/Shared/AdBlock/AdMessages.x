@@ -24,40 +24,36 @@ static void takeDown(id view) {
 
 // The fullscreen takeover, center modal and bottom sheet are presented in container view
 // controllers of their own; dismissed in viewWillAppear, the container never becomes visible.
-// dismiss(animated:NO) keeps UIKit's presentation bookkeeping consistent.
+// dismiss(animated:NO) keeps UIKit's presentation bookkeeping consistent. The classes are forward
+// declarations to the compiler, so self is used through its UIViewController cast.
+static void dismissContainer(id controller, NSString *what) {
+    SGAdBlockSawOne(@"Message surfaces");
+    SGAdBlockCountOne(@"Message surfaces");
+    SGLog(@"dismissed the CMP %@", what);
+    UIViewController *vc = (UIViewController *)controller;
+    vc.view.hidden = YES;
+    vc.view.userInteractionEnabled = NO;
+    [vc dismissViewControllerAnimated:NO completion:nil];
+}
+
 %hook _TtC37Messaging_ClientMessagingPlatformImpl33FullscreenContainerViewController
 - (void)viewWillAppear:(BOOL)animated {
     %orig;
-    SGAdBlockSawOne(@"Message surfaces");
-    SGAdBlockCountOne(@"Message surfaces");
-    SGLog(@"dismissed the CMP fullscreen container");
-    self.view.hidden = YES;
-    self.view.userInteractionEnabled = NO;
-    [self dismissViewControllerAnimated:NO completion:nil];
+    dismissContainer(self, @"fullscreen container");
 }
 %end
 
 %hook _TtC37Messaging_ClientMessagingPlatformImpl28ModalContainerViewController
 - (void)viewWillAppear:(BOOL)animated {
     %orig;
-    SGAdBlockSawOne(@"Message surfaces");
-    SGAdBlockCountOne(@"Message surfaces");
-    SGLog(@"dismissed the CMP modal container");
-    self.view.hidden = YES;
-    self.view.userInteractionEnabled = NO;
-    [self dismissViewControllerAnimated:NO completion:nil];
+    dismissContainer(self, @"modal container");
 }
 %end
 
 %hook _TtC37Messaging_ClientMessagingPlatformImpl52ClientMessagingPlatformBottomSheetPageViewController
 - (void)viewWillAppear:(BOOL)animated {
     %orig;
-    SGAdBlockSawOne(@"Message surfaces");
-    SGAdBlockCountOne(@"Message surfaces");
-    SGLog(@"dismissed the CMP bottom sheet");
-    self.view.hidden = YES;
-    self.view.userInteractionEnabled = NO;
-    [self dismissViewControllerAnimated:NO completion:nil];
+    dismissContainer(self, @"bottom sheet");
 }
 %end
 
