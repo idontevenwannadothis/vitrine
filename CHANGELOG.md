@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0-beta.15](https://github.com/idontevenwannadothis/vitrine/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2026-10-18)
+
+
+### Features
+
+* Spotify++ tier 2: the spoofed session is held together ([97b1eb1](https://github.com/idontevenwannadothis/vitrine/commit/97b1eb1913125939518839dfb900255b55859eb7))
+* Spotify++ tier 3: the remaining blockers, audited and closed ([f3dece9](https://github.com/idontevenwannadothis/vitrine/commit/f3dece925dfa9c72fb43455f8e311033ef6eab16))
+* Spotify++ tier 4: Genius and PetitLyrics join the lyrics sources ([96bdbd3](https://github.com/idontevenwannadothis/vitrine/commit/96bdbd3c089d69f09c7adae8d7797a87b70b3d7f))
+* Spotify++ tier 4: SponsorBlock reads the episode's marks and skips them ([397d4ef](https://github.com/idontevenwannadothis/vitrine/commit/397d4ef45b058d5e7554b33fda8f1bdacec3c8a6))
+* the account page's plan row, badge and overview match the spoof ([bbdef4d](https://github.com/idontevenwannadothis/vitrine/commit/bbdef4d2b6e6292ea94132fa26397dc439d7e68d))
+* the Spotify++ defaults ship on, the tour offers the spoof alone ([bd05a13](https://github.com/idontevenwannadothis/vitrine/commit/bd05a13e8f60f4816ef2a467883f4ed26f5e5a4d))
+
+
+### Fixes
+
+* %orig with arguments on lines of its own in SessionProtect.x ([946a988](https://github.com/idontevenwannadothis/vitrine/commit/946a9886cb7e123892e3b135b11f9c6743a6cec0))
+* no statement shares a line with %orig in SessionProtect.x ([b4bd825](https://github.com/idontevenwannadothis/vitrine/commit/b4bd825de2131a43bda72cd86e875b1f05611798))
+* the CMP containers' self through its UIViewController cast ([c73f9c4](https://github.com/idontevenwannadothis/vitrine/commit/c73f9c4db1dddd03dab716b08d8b2f33d5d8d300))
+* the query character set read as a class property ([e84678c](https://github.com/idontevenwannadothis/vitrine/commit/e84678c41ce75349b0feaac6734b8696aea4abd1))
+* the toast's button is a configuration, not deprecated insets ([71180cd](https://github.com/idontevenwannadothis/vitrine/commit/71180cdd3fc46089363c1bea22ff761d1a01dc7b))
+
 ## [1.0.0-beta.14](https://github.com/idontevenwannadothis/vitrine/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2026-10-18)
 
 
