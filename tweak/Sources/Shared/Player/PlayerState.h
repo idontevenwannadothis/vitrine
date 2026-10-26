@@ -26,5 +26,5 @@ void SGAddPlayerStateObserver(id<SGPlayerStateObserver> observer);
 // The last state reported, nil before the player has reported one.
 SPTPlayerState *SGPlayerState(void);
 // The player the reports come from, held weakly: how a feature seeks or pauses without hooking the
-// player itself (Shared/SponsorBlock seeks with it).
+// player itself (Shared/SponsorBlock seeks with it), nil until the first report.
 id SGPlayer(void);

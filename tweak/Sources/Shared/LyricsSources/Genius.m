@@ -1,119 +1,116 @@
-// Genius, reimplemented from EeveeSpotify's GeniusLyricsRepository.swift (GPL-3.0): the mobile
-// API's song search, the likeliest hit's page read as plain text. Nothing is timed — Genius is
-// the wide catalog of last resort's words, and a source after it that times anything still wins
-// the merge. The meanings of a line come from the same site the other way (Shared/LyricsMeanings).
+// Genius, under every other source: the words as its users transcribed them, with no timing at all, for
+// a track no source has lyrics for. The song is found by the search the line meanings share
+// (SongMatch.m).
+//
+// Genius's API gives a song's details and not its words; /api/songs/:id/lyrics wants a signed-in user.
+// The words are read from the embed it offers other sites (songs/:id/embed.js, about 15 KB against the
+// song page's 650): a script that writes the lyrics' HTML. That is reading a page, not an API, so a
+// change to the script's shape or the rg_embed_body around the lines ends this source, quietly: it then
+// has nothing for any track. Cloudflare in front of Genius turns some user agents away; the system's
+// own gets through.
 #import "Core/SGCore.h"
 #import "LyricsSources.h"
 
-static NSString *const kSearch = @"https://api.genius.com/search/song";
-static NSString *const kSong = @"https://api.genius.com/songs/";
-
-static NSDictionary<NSString *, NSString *> *headers(void) {
-    return @{@"X-Genius-iOS-Version": @"6.21.0",
-             @"X-Genius-Logged-Out": @"true",
-             @"User-Agent": @"Genius/1109"};
+// The string the script hands JSON.parse, its JavaScript escapes undone: a JSON string.
+static NSString *scriptString(NSString *js) {
+    NSRange open = [js rangeOfString:@"JSON.parse('"];
+    if (open.location == NSNotFound) return nil;
+    NSMutableString *json = [NSMutableString string];
+    NSUInteger from = NSMaxRange(open);
+    for (NSUInteger i = from; i < js.length; i++) {
+        unichar c = [js characterAtIndex:i];
+        if (c != '\'' && c != '\\') continue;
+        [json appendString:[js substringWithRange:NSMakeRange(from, i - from)]];
+        if (c == '\'') return json;
+        if (++i < js.length) [json appendFormat:@"%C", [js characterAtIndex:i]];
+        from = i + 1;
+    }
+    return nil;
 }
 
-// "Song (feat. X) - Remastered 2011" as Genius titles it: "Song".
-static NSString *bareTitle(NSString *title) {
-    NSString *bare = title ?: @"";
-    NSRange dash = [bare rangeOfString:@" - "];
-    if (dash.location != NSNotFound) bare = [bare substringToIndex:dash.location];
-    static NSRegularExpression *brackets;
+static NSString *decodedEntities(NSString *text) {
+    static NSRegularExpression *entity;
+    static NSDictionary<NSString *, NSString *> *named;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        brackets = [NSRegularExpression regularExpressionWithPattern:@"\\s*[\\(\\[][^\\)\\]]*[\\)\\]]" options:0 error:nil];
+        entity = [NSRegularExpression regularExpressionWithPattern:@"&(#[0-9]+|#[xX][0-9a-fA-F]+|[a-z]+);" options:0 error:nil];
+        named = @{@"amp": @"&", @"lt": @"<", @"gt": @">", @"quot": @"\"", @"apos": @"'", @"nbsp": @" "};
     });
-    bare = [brackets stringByReplacingMatchesInString:bare options:0 range:NSMakeRange(0, bare.length) withTemplate:@""];
-    return [bare stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-}
-
-static BOOL containsFolded(NSString *text, NSString *part) {
-    return part.length && [text rangeOfString:part options:NSCaseInsensitiveSearch].location != NSNotFound;
-}
-
-// The hit whose title and artist both agree with the track, else the best titled one, else the
-// first the search ranked — Genius's own ranking is better than nothing at all.
-static NSDictionary *bestHit(NSArray *sections, NSString *title, NSString *artist) {
-    NSMutableArray<NSDictionary *> *hits = [NSMutableArray array];
-    for (NSDictionary *section in [sections isKindOfClass:NSArray.class] ? sections : @[]) {
-        id list = [section isKindOfClass:NSDictionary.class] ? section[@"hits"] : nil;
-        for (NSDictionary *hit in [list isKindOfClass:NSArray.class] ? list : @[]) {
-            NSDictionary *song = [hit isKindOfClass:NSDictionary.class] ? hit[@"result"] : nil;
-            if ([song isKindOfClass:NSDictionary.class] && [song[@"id"] isKindOfClass:NSNumber.class]) [hits addObject:song];
+    NSMutableString *out = [text mutableCopy];
+    for (NSTextCheckingResult *match in [entity matchesInString:text options:0 range:NSMakeRange(0, text.length)].reverseObjectEnumerator) {
+        NSString *name = [text substringWithRange:[match rangeAtIndex:1]];
+        NSString *with = named[name];
+        if ([name hasPrefix:@"#"]) {
+            BOOL hex = name.length > 1 && ([name characterAtIndex:1] == 'x' || [name characterAtIndex:1] == 'X');
+            UTF32Char code = (UTF32Char)strtoul([name substringFromIndex:hex ? 2 : 1].UTF8String, NULL, hex ? 16 : 10);
+            with = code ? [[NSString alloc] initWithBytes:&code length:4 encoding:NSUTF32LittleEndianStringEncoding] : nil;
         }
+        if (with) [out replaceCharactersInRange:match.range withString:with];
     }
-    if (!hits.count) return nil;
-    NSString *wantArtist = SGLyricsLeadArtist(artist);
-    NSMutableArray<NSDictionary *> *titled = [NSMutableArray array];
-    for (NSDictionary *song in hits) {
-        NSString *songTitle = [song[@"title"] isKindOfClass:NSString.class] ? song[@"title"] : @"";
-        if (containsFolded(songTitle, title)) [titled addObject:song];
-    }
-    for (NSDictionary *song in titled) {
-        NSString *names = [song[@"artist_names"] isKindOfClass:NSString.class] ? song[@"artist_names"] : @"";
-        if (containsFolded(names, wantArtist) || containsFolded(names, artist)) return song;
-    }
-    return titled.count ? titled.firstObject : hits.firstObject;
+    return out;
 }
 
-// The page's plain text as lines: the [Chorus] headings out, the blank edges off, the empty rows
-// inside kept as breaks.
-static SGLyricsResult *resultFrom(NSString *plain) {
-    if (![plain isKindOfClass:NSString.class] || !plain.length) return nil;
-    static NSRegularExpression *heading;
+NSArray<NSString *> *SGGeniusEmbedRows(NSString *js) {
+    NSString *json = js ? scriptString(js) : nil;
+    id html = json ? [NSJSONSerialization JSONObjectWithData:[json dataUsingEncoding:NSUTF8StringEncoding]
+                                                     options:NSJSONReadingFragmentsAllowed error:nil] : nil;
+    if (![html isKindOfClass:NSString.class]) return nil;
+    NSRange body = [html rangeOfString:@"rg_embed_body"];
+    NSRange footer = [html rangeOfString:@"rg_embed_footer"];
+    if (body.location == NSNotFound || footer.location == NSNotFound || footer.location < NSMaxRange(body)) return nil;
+    // Up to the footer's own tag.
+    NSUInteger end = [html rangeOfString:@"<" options:NSBackwardsSearch range:NSMakeRange(NSMaxRange(body), footer.location - NSMaxRange(body))].location;
+    if (end == NSNotFound) return nil;
+    NSString *lyrics = [html substringWithRange:NSMakeRange(NSMaxRange(body), end - NSMaxRange(body))];
+    NSRange tagEnd = [lyrics rangeOfString:@">"];
+    if (tagEnd.location == NSNotFound) return nil;
+    lyrics = [lyrics substringFromIndex:NSMaxRange(tagEnd)];
+
+    static NSRegularExpression *breaks, *tags;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        heading = [NSRegularExpression regularExpressionWithPattern:@"^\\[.*\\]$" options:0 error:nil];
+        breaks = [NSRegularExpression regularExpressionWithPattern:@"<br\\s*/?>|</p>" options:NSRegularExpressionCaseInsensitive error:nil];
+        tags = [NSRegularExpression regularExpressionWithPattern:@"<[^>]*>" options:0 error:nil];
     });
+    // The HTML's own newlines are layout; its <br>s are the lines.
+    lyrics = [[lyrics componentsSeparatedByCharactersInSet:NSCharacterSet.newlineCharacterSet] componentsJoinedByString:@""];
+    lyrics = [breaks stringByReplacingMatchesInString:lyrics options:0 range:NSMakeRange(0, lyrics.length) withTemplate:@"\n"];
+    lyrics = [tags stringByReplacingMatchesInString:lyrics options:0 range:NSMakeRange(0, lyrics.length) withTemplate:@""];
+    lyrics = decodedEntities(lyrics);
+
+    // [Chorus] and the like name the part, they are not sung; one empty row stands for any gap.
     NSMutableArray<NSString *> *rows = [NSMutableArray array];
-    for (NSString *row in [plain componentsSeparatedByCharactersInSet:NSCharacterSet.newlineCharacterSet]) {
-        NSString *trimmed = [row stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-        if ([heading firstMatchInString:trimmed options:0 range:NSMakeRange(0, trimmed.length)]) continue;
-        [rows addObject:trimmed];
+    for (NSString *row in [lyrics componentsSeparatedByString:@"\n"]) {
+        NSString *text = [row stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+        if ([text hasPrefix:@"["] && [text hasSuffix:@"]"]) continue;
+        if (!text.length && (!rows.count || !rows.lastObject.length)) continue;
+        [rows addObject:text];
     }
-    while (rows.count && ![rows.firstObject length]) [rows removeObjectAtIndex:0];
-    while (rows.count && ![rows.lastObject length]) [rows removeLastObject];
-    if (!rows.count) return nil;
-    NSMutableArray<NSNumber *> *starts = [NSMutableArray array];
-    NSMutableArray<NSString *> *texts = [NSMutableArray array];
-    for (NSString *row in rows) {
-        [starts addObject:@0];
-        [texts addObject:row.length ? row : @"♪"];
-    }
-    SGLyricsResult *result = [SGLyricsResult new];
-    result.starts = starts;
-    result.texts = texts;
-    result.karaokeLines = SGKaraokeStaticLines(texts);
-    return result;
+    if (rows.count && !rows.lastObject.length) [rows removeLastObject];
+    return rows.count ? rows : nil;
 }
 
 SGLyricsAsk SGGeniusAsk = ^(SGLyricsQuery *query, void (^done)(SGLyricsResult *result)) {
-    NSString *title = bareTitle(query.title);
-    if (!title.length || !query.artist.length) {
-        SGLog(@"genius: nothing to search with for %@", query.trackID);
+    if (!query.title.length || !query.artist.length) {
         done(nil);
         return;
     }
-    NSString *text = [NSString stringWithFormat:@"%@ %@", title, SGLyricsLeadArtist(query.artist)];
-    SGLyricsGetJSON(SGLyricsURL(kSearch, @{@"q": text}), headers(), ^(id root) {
-        id response = [root isKindOfClass:NSDictionary.class] ? root[@"response"] : nil;
-        NSDictionary *hit = bestHit([response isKindOfClass:NSDictionary.class] ? response[@"sections"] : nil, title, query.artist);
-        if (!hit) {
-            if (root) SGLog(@"genius: no hit for %@ by %@", title, query.artist);
+    SGLyricsGetJSON(SGLyricsURL(SGGeniusSearchURL, SGGeniusSearchQuery(query.title, query.artist)), nil, ^(id root) {
+        NSNumber *song = SGGeniusSongIn([root isKindOfClass:NSDictionary.class] ? root[@"response"] : nil, query.title, query.artist);
+        if (!song) {
+            SGLog(@"genius: no song for %@ by %@", query.title, query.artist);
             done(nil);
             return;
         }
-        NSURL *url = SGLyricsURL([kSong stringByAppendingString:[hit[@"id"] stringValue]], @{@"text_format": @"plain"});
-        SGLyricsGetJSON(url, headers(), ^(id songRoot) {
-            id songResponse = [songRoot isKindOfClass:NSDictionary.class] ? songRoot[@"response"] : nil;
-            id song = [songResponse isKindOfClass:NSDictionary.class] ? songResponse[@"song"] : nil;
-            id lyrics = [song isKindOfClass:NSDictionary.class] ? song[@"lyrics"] : nil;
-            NSString *plain = [lyrics isKindOfClass:NSDictionary.class] ? lyrics[@"plain"] : nil;
-            SGLyricsResult *result = resultFrom(plain);
-            SGLog(@"genius: %@ by %@ gave %@", title, query.artist,
-                  result ? [NSString stringWithFormat:@"%lu untimed lines", (unsigned long)result.texts.count] : @"nothing");
-            done(result);
+        NSURL *embed = [NSURL URLWithString:[NSString stringWithFormat:@"https://genius.com/songs/%@/embed.js", song]];
+        SGLyricsGetTextThen(embed, ^id(NSString *js) { return SGGeniusEmbedRows(js); }, ^(NSArray<NSString *> *rows) {
+            if (!rows) {
+                SGLog(@"genius: %@ by %@ is song %@, no lines in its embed", query.title, query.artist, song);
+                done(nil);
+                return;
+            }
+            SGLog(@"genius: %@ by %@ is song %@, %lu untimed lines", query.title, query.artist, song, (unsigned long)rows.count);
+            done(SGLyricsPlainResult(rows));
         });
     });
 };
