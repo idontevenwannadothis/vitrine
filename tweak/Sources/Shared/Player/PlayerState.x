@@ -10,6 +10,7 @@ NSString *SGURIString(id uri) {
 
 static NSHashTable<id<SGPlayerStateObserver>> *sg_stateObservers;
 static SPTPlayerState *sg_playerState;
+static __weak id sg_player;
 // What the last change was told from, so a report that moved none of them tells observers nothing.
 static BOOL sg_stateSeen;
 static NSString *sg_stateTrack, *sg_stateContext;
@@ -73,7 +74,6 @@ static void report(id player, id state, BOOL platform) {
 @end
 
 static SGPlayerObserver *sg_ownObserver;
-static __weak id sg_player;
 
 id SGPlayer(void) {
     return sg_player;
